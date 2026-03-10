@@ -1,0 +1,96 @@
+created: 20260310120000000
+modified: 20260310120000000
+rdt.order: 3
+rdt.plugin-key: minver
+rdt.plugin-name: minver
+rdt.plugin-subtitle: Browser-side tiddler versioning with snapshots
+rdt.section: Reference
+title: $:/plugins/rimir/minver/doc/reference
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Action widget: `<$action-minver>`
+
+|!Attribute |!Description |
+|`op` |Operation: `snapshot`, `delete`, `delete-all`, `rollback`, `rollback-field`, `export`, `import`, `clean-all` |
+|`title` |Original tiddler title (not the draft title) |
+|`label` |Snapshot label (for `snapshot` op, optional — defaults to timestamp) |
+|`draft` |Draft tiddler title (for `snapshot`, `rollback`, `rollback-field`) |
+|`source` |`"draft"` or `"saved"` — which version to snapshot (default: `"draft"`) |
+|`snapshot-id` |UUID of the target snapshot (for `delete`, `rollback`, `rollback-field`) |
+|`field` |Field name (for `rollback-field` only) |
+
+!! Operations
+
+|!Op |!Description |
+|`snapshot` |Capture current fields as a manual snapshot. Always saved to both wiki store and localStorage. |
+|`delete` |Delete a single snapshot by ID. |
+|`delete-all` |Delete all snapshots for a tiddler. |
+|`rollback` |Replace all draft fields with snapshot fields. Fields not in the snapshot are removed. |
+|`rollback-field` |Restore a single field from the snapshot. If the field doesn't exist in the snapshot, it is removed from the draft. |
+|`export` |Serialize all snapshots from localStorage into `$:/minver/export` as JSON. |
+|`import` |Load snapshots from `$:/minver/export` into localStorage and wiki store. |
+|`clean-all` |Delete all snapshots from both localStorage and wiki store. |
+
+!! Snapshot object format
+
+```json
+{
+  "id": "uuid-v4",
+  "timestamp": 1710000000000,
+  "label": "snapshot-20260310..." | "my custom label",
+  "type": "manual" | "auto",
+  "fields": {
+    "title": "My Tiddler",
+    "text": "...",
+    "tags": "tag1 tag2",
+    "created": "20260310...",
+    "modified": "20260310...",
+    "custom-field": "value"
+  }
+}
+```
+
+All tiddler fields are captured as strings. Dates are stringified via `$tw.utils.stringifyDate()`, arrays via `$tw.utils.stringifyList()`. Draft-specific fields (`draft.of`, `draft.title`) are stripped — the original title is stored.
+
+!! Temp tiddler layout
+
+|!Tiddler |!Content |
+|`$:/temp/minver/snapshots/<title>` |JSON array of snapshot objects for `<title>` |
+|`$:/temp/minver/status` |`"loading"` or `"ready"` — hydration state |
+|`$:/temp/minver/storage-usage` |Human-readable localStorage usage (e.g., "12.5 KB") |
+
+!! Configuration tiddlers
+
+|!Tiddler |!Default |!Description |
+|`$:/config/rimir/minver/max-manual` |`3` |Max manual snapshots per tiddler |
+|`$:/config/rimir/minver/max-auto` |`3` |Max auto snapshots per tiddler |
+|`$:/config/rimir/minver/scope-filter` |`[all[]]` |Filter for which tiddlers get auto-snapshots |
+|`$:/config/rimir/minver/auto-to-storage` |`no` |Persist auto-snapshots to localStorage |
+
+!! localStorage key format
+
+Keys are prefixed with `minver:` followed by the tiddler title:
+
+```
+minver:My Tiddler → base64(deflate(JSON.stringify(snapshots)))
+minver:$:/my-system-tiddler → base64(deflate(JSON.stringify(snapshots)))
+```
+
+!! Export/Import format
+
+The export tiddler `$:/minver/export` contains a JSON object keyed by tiddler title:
+
+```json
+{
+  "My Tiddler": [ { snapshot }, { snapshot }, ... ],
+  "$:/system-tiddler": [ ... ]
+}
+```
+
+Both auto and manual snapshots are included. Import merges with (overwrites) existing snapshots.
+
+</$fill>
+</$transclude>

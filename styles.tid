@@ -1,0 +1,278 @@
+created: 20260310120000000
+modified: 20260310120000000
+tags: $:/tags/Stylesheet
+title: $:/plugins/rimir/minver/styles
+type: text/vnd.tiddlywiki
+
+/* Toolbar area */
+.mv-toolbar {
+	padding: 4px 8px;
+	border-bottom: 1px solid <<colour tiddler-border>>;
+	margin-bottom: 8px;
+}
+
+.mv-snapshot-row {
+	display: flex;
+	gap: 6px;
+	margin-bottom: 6px;
+}
+
+.mv-label-input {
+	flex: 1;
+	min-width: 0;
+}
+
+.mv-snapshot-btn {
+	white-space: nowrap;
+}
+
+.mv-controls-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.mv-select-group {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: 1;
+	min-width: 0;
+}
+
+.mv-select {
+	flex: 1;
+	min-width: 120px;
+	padding: 4px 6px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 3px;
+	font-size: 0.9em;
+	background: <<colour tiddler-editor-background>>;
+	color: <<colour foreground>>;
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 6px center;
+	padding-right: 22px;
+	cursor: pointer;
+}
+
+.mv-select:hover {
+	border-color: <<colour primary>>;
+}
+
+.mv-select:focus {
+	border-color: <<colour primary>>;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(100, 149, 237, 0.2);
+}
+
+.mv-toggle-group {
+	display: flex;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.mv-toggle-btn {
+	padding: 2px 10px;
+	border: none;
+	background: transparent;
+	font-size: 0.85em;
+	cursor: pointer;
+	color: <<colour foreground>>;
+}
+
+.mv-toggle-btn:hover {
+	background: <<colour tiddler-border>>;
+}
+
+.mv-toggle-active {
+	background: <<colour primary>>;
+	color: white;
+}
+
+.mv-toggle-active:hover {
+	background: <<colour primary>>;
+	opacity: 0.9;
+}
+
+/* Snapshot info bar */
+.mv-snapshot-info {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 8px;
+	margin-bottom: 6px;
+	font-size: 0.85em;
+}
+
+/* Type badges — extends rr-badge-rect from theme */
+.mv-type-manual {
+	background: <<colour primary>>;
+}
+
+.mv-type-auto {
+	background: <<colour muted-foreground>>;
+}
+
+.mv-delete-btn {
+	margin-left: auto;
+}
+
+.mv-rollback-btn {
+	font-weight: bold;
+}
+
+/* Field diffs */
+.mv-field-diffs {
+	padding: 0 8px;
+}
+
+.mv-field-row {
+	border: 1px solid <<colour code-border>>;
+	border-radius: 3px;
+	margin-bottom: 6px;
+	overflow: hidden;
+}
+
+.mv-field-header {
+	display: flex;
+	align-items: center;
+	padding: 3px 8px;
+	background: <<colour tiddler-editor-border>>;
+	border-bottom: 1px solid <<colour code-border>>;
+}
+
+.mv-field-name {
+	font-weight: bold;
+	font-size: 0.85em;
+	color: <<colour muted-foreground>>;
+}
+
+.mv-field-reset {
+	margin-left: auto;
+	color: <<colour muted-foreground>>;
+	padding: 0 2px;
+}
+
+.mv-field-reset:hover {
+	color: <<colour primary>>;
+}
+
+.mv-field-diff {
+	padding: 4px 8px;
+	font-size: 0.85em;
+	overflow-x: auto;
+}
+
+.mv-field-added {
+	border-color: #28a745;
+}
+
+.mv-field-added .mv-field-header {
+	background: rgba(40, 167, 69, 0.1);
+}
+
+.mv-field-removed {
+	border-color: #d9534f;
+}
+
+.mv-field-removed .mv-field-header {
+	background: rgba(217, 83, 79, 0.1);
+}
+
+.mv-undo-icon {
+	vertical-align: middle;
+}
+
+/* Icon buttons — shared base for trash, delete, diff toggles */
+.mv-icon-btn {
+	color: <<colour muted-foreground>>;
+	padding: 2px 4px;
+}
+
+.mv-icon-btn:hover {
+	color: <<colour primary>>;
+}
+
+.mv-icon-btn-danger:hover {
+	color: #d9534f;
+}
+
+.mv-select-delete {
+	margin-left: 4px;
+	flex-shrink: 0;
+}
+
+/* Manager */
+.mv-manager-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.mv-manager-diff-cell {
+	padding: 0 !important;
+	background: <<colour page-background>>;
+}
+
+.mv-manager-diff-inner {
+	margin: 6px 6px 6px 24px;
+	padding: 8px;
+	background: <<colour tiddler-background>>;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 4px;
+	border-left: 3px solid <<colour primary>>;
+}
+
+/* Export draggable */
+.mv-export-drag {
+	margin: 8px 0;
+}
+
+.mv-export-drag-handle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 1px dashed <<colour primary>>;
+	border-radius: 4px;
+	background: rgba(100, 149, 237, 0.05);
+	cursor: grab;
+	font-size: 0.9em;
+}
+
+.mv-export-drag-handle:hover {
+	background: rgba(100, 149, 237, 0.12);
+	border-style: solid;
+}
+
+.mv-export-drag-icon {
+	display: flex;
+	color: <<colour primary>>;
+}
+
+.mv-download-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-left: 8px;
+	padding: 6px 12px;
+	font-size: 0.9em;
+	color: <<colour primary>>;
+	border: 1px solid <<colour primary>>;
+	border-radius: 4px;
+}
+
+.mv-download-btn:hover {
+	background: rgba(100, 149, 237, 0.1);
+}
+
+/* Status messages */
+.mv-no-selection,
+.mv-empty {
+	margin: 8px;
+}

@@ -1,0 +1,153 @@
+caption: {{$:/plugins/rimir/minver/icon}} manager
+created: 20260310120000000
+modified: 20260310120000000
+title: $:/plugins/rimir/minver/manager
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\procedure minver-manager()
+
+<div class="mv-manager">
+
+<!-- Top actions -->
+<div class="mv-manager-actions-bar">
+	<$button class="tc-btn-big-green" style="margin-right:8px">
+		<$action-minver op="export"/>
+		Export all Snapshots
+	</$button>
+	<$button class="tc-btn-big-green" style="margin-right:8px">
+		<$action-confirm $message="Import snapshots from $:/minver/export? This will merge with existing snapshots.">
+		<$action-minver op="import"/>
+		</$action-confirm>
+		Import Snapshots
+	</$button>
+	<$button class="tc-btn-big-green" style="background:#d9534f; margin-right:8px">
+		<$action-confirm $message="Clear ALL snapshots from browser storage? This cannot be undone.">
+		<$action-minver op="clean-all"/>
+		</$action-confirm>
+		Clear all Snapshots
+	</$button>
+</div>
+
+<!-- Draggable export tiddler -->
+<%if [[$:/minver/export]is[tiddler]] %>
+<div class="mv-export-drag">
+	<$draggable tiddler="$:/minver/export" class="mv-export-drag-handle">
+		<span class="mv-export-drag-icon">
+			<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+		</span>
+		Drag <code>$:/minver/export</code> to another wiki to transfer snapshots
+	</$draggable>
+	<$button class="tc-btn-invisible mv-download-btn" tooltip="Download as JSON file">
+		<$action-sendmessage $message="tm-download-file" $param="$:/minver/export" filename="minver-snapshots.json"/>
+		<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+		Download
+	</$button>
+</div>
+<%endif%>
+
+<div class="rr-input-row" style="margin:8px 0">
+	<$edit-text tiddler="$:/temp/minver/manager-filter" tag="input" placeholder="Filter tiddler titles..." class="rr-input" default=""/>
+</div>
+
+<$let filterText={{{ [[$:/temp/minver/manager-filter]get[text]else[]] }}}>
+
+<!-- List all tiddlers that have snapshots -->
+<$list filter="[prefix[$:/temp/minver/snapshots/]removeprefix[$:/temp/minver/snapshots/]!is[blank]search<filterText>sort[]]" variable="tiddlerTitle" emptyMessage="<div class='rr-status-info'>No snapshots found.</div>">
+	<$let
+		snapshotsTiddler={{{ [[$:/temp/minver/snapshots/]addsuffix<tiddlerTitle>] }}}
+		managerState={{{ [[$:/state/minver/manager/]addsuffix<tiddlerTitle>] }}}
+		snapshotCount={{{ [<snapshotsTiddler>get[text]jsonindexes[]count[]] }}}
+	>
+	<div class="mv-manager-tiddler">
+		<div class="mv-manager-header">
+			<$button class="tc-btn-invisible mv-manager-toggle">
+				<$action-setfield $tiddler=<<managerState>> text={{{ [<managerState>get[text]match[open]then[closed]else[open]] }}}/>
+				<$reveal type="match" state=<<managerState>> text="open" tag="span">▾</$reveal>
+				<$reveal type="nomatch" state=<<managerState>> text="open" tag="span">▸</$reveal>
+			</$button>
+			<$link to=<<tiddlerTitle>>><$text text=<<tiddlerTitle>>/></$link>
+			<span class="rr-muted mv-manager-count">(<$text text=<<snapshotCount>>/> snapshots)</span>
+			<$button class="rr-link-btn rr-link-btn-danger tc-btn-invisible" tooltip="Delete all snapshots for this tiddler">
+				<$action-confirm $message={{{ [[Delete all snapshots for ']addsuffix<tiddlerTitle>addsuffix['?]] }}}>
+				<$action-minver op="delete-all" title=<<tiddlerTitle>>/>
+				</$action-confirm>
+				Delete all
+			</$button>
+		</div>
+
+		<$reveal type="match" state=<<managerState>> text="open" animate="yes">
+		<table class="rr-table mv-manager-table">
+			<tr><th>Type</th><th>Label</th><th>Time</th><th></th></tr>
+			<$list filter="[<snapshotsTiddler>get[text]jsonindexes[]]" variable="idx">
+				<$let
+					sid={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[id]] }}}
+					stype={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[type]] }}}
+					slabel={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[label]] }}}
+					stimestamp={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[timestamp]] }}}
+				>
+				<$let diffState={{{ [[$:/state/minver/manager-diff/]addsuffix<tiddlerTitle>addsuffix[/]addsuffix<sid>] }}}>
+				<tr>
+					<td><span class={{{ [<stype>match[manual]then[rr-badge-rect mv-type-manual]else[rr-badge-rect mv-type-auto]] }}}><$text text=<<stype>>/></span></td>
+					<td><$text text=<<slabel>>/></td>
+					<td class="rr-muted rr-small rr-nowrap"><$text text={{{ [<stimestamp>format:timestamp[YYYY-0MM-0DD 0hh:0mm]] }}}/></td>
+					<td class="mv-manager-actions">
+						<$button class="tc-btn-invisible mv-icon-btn" tooltip="Show diff against current saved state">
+							<$action-setfield $tiddler=<<diffState>> text={{{ [<diffState>get[text]match[open]then[closed]else[open]] }}}/>
+							<$reveal type="match" state=<<diffState>> text="open" tag="span"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></$reveal>
+							<$reveal type="nomatch" state=<<diffState>> text="open" tag="span"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></$reveal>
+						</$button>
+						<$button class="mv-icon-btn mv-icon-btn-danger tc-btn-invisible" tooltip="Delete this snapshot">
+							<$action-confirm $message={{{ [[Delete snapshot ']addsuffix<slabel>addsuffix[' from ']addsuffix<tiddlerTitle>addsuffix['?]] }}}>
+							<$action-minver op="delete" title=<<tiddlerTitle>> snapshot-id=<<sid>>/>
+							</$action-confirm>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+						</$button>
+					</td>
+				</tr>
+				<$reveal type="match" state=<<diffState>> text="open" tag="tr">
+					<td colspan="4" class="mv-manager-diff-cell">
+						<div class="mv-field-diffs mv-manager-diff-inner">
+						<$list filter="[<snapshotsTiddler>get[text]jsonindexes<idx>,[fields]] [<tiddlerTitle>fields[]] +[sort[]]" variable="fieldName">
+							<$let
+								snapshotVal={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[fields],<fieldName>] +[else[]] }}}
+								currentVal={{{ [<tiddlerTitle>get<fieldName>] +[else[]] }}}
+								snapshotHasField={{{ [<snapshotsTiddler>get[text]jsonindexes<idx>,[fields]match<fieldName>count[]] }}}
+								currentHasField={{{ [<tiddlerTitle>has<fieldName>then[1]else[0]] }}}
+							>
+							<%if [<snapshotVal>!match<currentVal>] %>
+								<div class={{{ [<snapshotHasField>match[0]then[mv-field-row mv-field-added]] [<currentHasField>match[0]then[mv-field-row mv-field-removed]] +[else[mv-field-row]first[]] }}}>
+									<div class="mv-field-header">
+										<span class="mv-field-name">
+											<%if [<snapshotHasField>match[0]] %>
+												<span class="rr-badge-circle rr-badge-added">+</span>
+											<%elseif [<currentHasField>match[0]] %>
+												<span class="rr-badge-circle rr-badge-removed">&minus;</span>
+											<%endif%>
+											<$text text=<<fieldName>>/>
+										</span>
+									</div>
+									<div class="mv-field-diff">
+										<$diff-text source=<<snapshotVal>> dest=<<currentVal>>/>
+									</div>
+								</div>
+							<%endif%>
+							</$let>
+						</$list>
+						</div>
+					</td>
+				</$reveal>
+				</$let>
+				</$let>
+			</$list>
+		</table>
+		</$reveal>
+	</div>
+	</$let>
+</$list>
+
+</$let>
+</div>
+
+\end
+<<minver-manager>>

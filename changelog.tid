@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/minver/changelog
+type: text/vnd.tiddlywiki
+
+|!Version |!Date |!Changes |
+|0.1.0 |2026-03-10 |Initial release: manual/auto snapshots, diff preview, manager, settings, export/import |

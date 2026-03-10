@@ -1,0 +1,12 @@
+title: $:/plugins/rimir/minver/documentation
+type: text/vnd.tiddlywiki
+
+<%if [[$:/plugins/rimir/doc-template]has[plugin-type]] %>
+<$tiddler tiddler="$:/plugins/rimir/minver/doc/overview">
+<$transclude $tiddler="$:/plugins/rimir/minver/doc/overview"/>
+</$tiddler>
+<%else%>
+To display this documentation, the plugin [[$:/plugins/rimir/doc-template]] needs to be installed.
+
+See the [[readme|$:/plugins/rimir/minver/readme]] tab for a basic overview.
+<%endif%>

@@ -1,0 +1,90 @@
+created: 20260310120000000
+modified: 20260310120000000
+rdt.order: 5
+rdt.plugin-key: minver
+rdt.plugin-name: minver
+rdt.plugin-subtitle: Browser-side tiddler versioning with snapshots
+rdt.section: Dev Workflow
+title: $:/plugins/rimir/minver/doc/dev-workflow
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Restart rules
+
+minver is entirely browser-side. The restart behavior is:
+
+|!File |!Type |!Restart needed? |
+|`storage.js` |`module-type: library` |Yes (server restart) |
+|`startup.js` |`module-type: startup` |Yes (server restart) |
+|`save-hook.js` |`module-type: startup` |Yes (server restart) |
+|`action-minver.js` |`module-type: widget` |Yes (server restart) |
+|`preview-snapshots.tid` |System tiddler (UI) |Browser reload |
+|`manager.tid` |System tiddler (UI) |Browser reload |
+|`settings.tid` |System tiddler (UI) |Browser reload |
+|`styles.tid` |Stylesheet |Browser reload |
+|Config tiddlers |Data |No restart needed |
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/callout" type="info">
+<$fill $name="body">
+JS modules require a full server restart. UI tiddlers (`.tid`) are system tiddlers that need a browser reload since `$:/config/SyncSystemTiddlersFromServer` defaults to `"no"`.
+</$fill>
+</$transclude>
+
+!! File layout
+
+```
+minver/
+├── plugin.info
+├── storage.js / .meta        — compression, localStorage, eviction, capture
+├── startup.js / .meta        — hydrate from localStorage on load
+├── save-hook.js / .meta      — th-saving-tiddler hook (auto-snapshot + state reset)
+├── action-minver.js / .meta  — <$action-minver> widget (all operations)
+├── preview-snapshots.tid     — editor preview pane (tagged $:/tags/EditPreview)
+├── manager.tid               — standalone snapshot manager UI
+├── settings.tid              — settings UI (tagged for core-hook hub)
+├── styles.tid                — CSS (uses rr- theme classes where possible)
+├── config-*.tid              — default configuration values
+├── doc/                      — documentation (doc-template system)
+│   ├── overview.tid
+│   ├── architecture.tid
+│   ├── reference.tid
+│   ├── examples.tid
+│   └── dev-workflow.tid
+├── readme.tid, documentation.tid, changelog.tid
+├── icon.tid, LICENSE.md, LICENSE.md.meta, README.md
+```
+
+!! Key implementation details
+
+!!! Rollback rebuilds from scratch
+
+Rollback does ''not'' merge snapshot fields with the draft (`new $tw.Tiddler(draft, snapshotFields)`). Instead, it builds a new tiddler containing only the snapshot's fields plus draft metadata (`title`, `draft.of`, `draft.title`). This ensures fields added after the snapshot are properly removed.
+
+!!! Single-field rollback for missing fields
+
+When rolling back a field that doesn't exist in the snapshot, the code rebuilds the draft without that field (copying all fields except the target). TW's `Tiddler` constructor ignores `undefined` values, so setting a field to `undefined` doesn't remove it.
+
+!!! Compare state reset
+
+The `th-saving-tiddler` hook deletes `$:/state/minver/compare/<title>` after saving, so the next edit session defaults back to "Compare Draft" instead of persisting a stale "Saved" selection.
+
+!!! Compression pipeline
+
+```
+JSON.stringify(snapshots)
+  → Blob → CompressionStream("deflate") → ArrayBuffer
+  → btoa() → localStorage.setItem()
+```
+
+Decompression reverses the pipeline. Both are async (return Promises).
+
+!! CSS conventions
+
+* Plugin-specific classes use `mv-` prefix
+* Reuses `rr-` theme classes: `rr-badge-rect`, `rr-muted`, `rr-small`, `rr-nowrap`, `rr-input`, `rr-input-row`, `rr-table`, `rr-link-btn`, `rr-callout`, `rr-badge-circle`, `rr-status-info`
+* Icon buttons use shared `.mv-icon-btn` base with `.mv-icon-btn-danger` modifier for destructive actions
+
+</$fill>
+</$transclude>

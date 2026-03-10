@@ -1,0 +1,161 @@
+caption: snapshots
+created: 20260310120000000
+modified: 20260310120000000
+tags: $:/tags/EditPreview
+title: $:/plugins/rimir/minver/preview-snapshots
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\procedure minver-preview()
+<$let
+	originalTitle={{{ [{!!draft.of}] }}}
+	draftTitle=<<currentTiddler>>
+	snapshotsTiddler={{{ [[$:/temp/minver/snapshots/]addsuffix{!!draft.of}] }}}
+	selectedState={{{ [[$:/state/minver/selected/]addsuffix{!!draft.of}] }}}
+	compareState={{{ [[$:/state/minver/compare/]addsuffix{!!draft.of}] }}}
+	labelState={{{ [[$:/temp/minver/label/]addsuffix{!!draft.of}] }}}
+	selectedId={{{ [<selectedState>get[text]] }}}
+	compareMode={{{ [<compareState>get[text]else[draft]] }}}
+	compareTiddler={{{ [<compareMode>match[draft]then<draftTitle>else<originalTitle>] }}}
+	draftRevision={{{ [<draftTitle>get[modified]] }}}
+>
+
+<!-- Toolbar -->
+<div class="mv-toolbar">
+	<!-- Take snapshot -->
+	<div class="mv-snapshot-row">
+		<$edit-text tiddler=<<labelState>> tag="input" placeholder="snapshot label (optional)" class="rr-input mv-label-input" default=""/>
+		<$button class="tc-btn-big-green mv-snapshot-btn" tooltip="Snapshots capture the current draft state">
+			<$let label={{{ [<labelState>get[text]] }}}>
+			<$action-minver op="snapshot" title=<<originalTitle>> label=<<label>> draft=<<draftTitle>> source="draft"/>
+			<$action-setfield $tiddler=<<labelState>> text=""/>
+			</$let>
+			Snapshot draft
+		</$button>
+	</div>
+
+	<!-- Compare [Draft|Saved] with: [dropdown] -->
+	<div class="mv-controls-row">
+		<span class="rr-muted rr-small rr-nowrap">Compare</span>
+		<div class="mv-toggle-group">
+			<$button class={{{ [<compareMode>match[draft]then[mv-toggle-btn mv-toggle-active]else[mv-toggle-btn]] }}}>
+				<$action-setfield $tiddler=<<compareState>> text="draft"/>
+				Draft
+			</$button>
+			<$button class={{{ [<compareMode>match[saved]then[mv-toggle-btn mv-toggle-active]else[mv-toggle-btn]] }}}>
+				<$action-setfield $tiddler=<<compareState>> text="saved"/>
+				Saved
+			</$button>
+		</div>
+		<span class="rr-muted rr-small rr-nowrap">with:</span>
+		<div class="mv-select-group">
+			<$select tiddler=<<selectedState>> class="mv-select">
+				<option value="">-- select snapshot --</option>
+				<!-- Manual snapshots first -->
+				<$list filter="[<snapshotsTiddler>get[text]jsonindexes[]] :filter[<snapshotsTiddler>get[text]jsonget<currentTiddler>,[type]match[manual]]" variable="idx">
+					<$let
+						sid={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[id]] }}}
+						slabel={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[label]] }}}
+					>
+					<option value=<<sid>>><$text text={{{ [[⬥ ]addsuffix<slabel>] }}}/></option>
+					</$let>
+				</$list>
+				<!-- Auto snapshots -->
+				<$list filter="[<snapshotsTiddler>get[text]jsonindexes[]] :filter[<snapshotsTiddler>get[text]jsonget<currentTiddler>,[type]match[auto]]" variable="idx">
+					<$let
+						sid={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[id]] }}}
+						slabel={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[label]] }}}
+					>
+					<option value=<<sid>>><$text text={{{ [[◦ ]addsuffix<slabel>] }}}/></option>
+					</$let>
+				</$list>
+			</$select>
+			<%if [<selectedId>!is[blank]] %>
+				<$button class="mv-icon-btn mv-icon-btn-danger mv-select-delete tc-btn-invisible" tooltip="Delete selected snapshot">
+					<$action-confirm $message={{{ [[Delete selected snapshot from ']addsuffix<originalTitle>addsuffix['?]] }}}>
+					<$action-minver op="delete" title=<<originalTitle>> snapshot-id=<<selectedId>>/>
+					<$action-setfield $tiddler=<<selectedState>> text=""/>
+					</$action-confirm>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+				</$button>
+			<%endif%>
+		</div>
+	</div>
+</div>
+
+<!-- Diff content -->
+<%if [<selectedId>!is[blank]] %>
+	<$list filter="[<snapshotsTiddler>get[text]jsonindexes[]] :filter[<snapshotsTiddler>get[text]jsonget<currentTiddler>,[id]match<selectedId>]" variable="idx">
+		<$let
+			snapshotType={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[type]] }}}
+			snapshotLabel={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[label]] }}}
+			snapshotId={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[id]] }}}
+		>
+		<div class="mv-snapshot-info">
+			<span class={{{ [<snapshotType>match[manual]then[rr-badge-rect mv-type-manual]else[rr-badge-rect mv-type-auto]] }}}>
+				<$text text=<<snapshotType>>/>
+			</span>
+			<span class="rr-muted"><$text text=<<snapshotLabel>>/></span>
+			<$button class="rr-link-btn rr-link-btn-danger tc-btn-invisible mv-delete-btn" tooltip="Delete this snapshot">
+				<$action-minver op="delete" title=<<originalTitle>> snapshot-id=<<snapshotId>>/>
+				<$action-setfield $tiddler=<<selectedState>> text=""/>
+				✕
+			</$button>
+			<$button class="rr-link-btn tc-btn-invisible mv-rollback-btn" tooltip="Rollback all fields to this snapshot">
+				<$action-confirm $message={{{ [[Rollback ']addsuffix<originalTitle>addsuffix[' to snapshot ']addsuffix<snapshotLabel>addsuffix['?]] }}}>
+				<$action-minver op="rollback" title=<<originalTitle>> snapshot-id=<<snapshotId>> draft=<<draftTitle>>/>
+				</$action-confirm>
+				Rollback all
+			</$button>
+		</div>
+
+		<!-- Per-field diffs: union of snapshot fields + current tiddler fields -->
+		<div class="mv-field-diffs">
+			<$list filter="[<snapshotsTiddler>get[text]jsonindexes<idx>,[fields]] [<compareTiddler>fields[]] +[!match[title]!match[draft.of]!match[draft.title]sort[]]" variable="fieldName">
+				<$let
+					snapshotVal={{{ [<snapshotsTiddler>get[text]jsonget<idx>,[fields],<fieldName>] +[else[]] }}}
+					currentVal={{{ [<compareTiddler>get<fieldName>] +[else[]] }}}
+					snapshotHasField={{{ [<snapshotsTiddler>get[text]jsonindexes<idx>,[fields]match<fieldName>count[]] }}}
+					currentHasField={{{ [<compareTiddler>has<fieldName>then[1]else[0]] }}}
+				>
+				<%if [<snapshotVal>!match<currentVal>] %>
+					<div class={{{ [<snapshotHasField>match[0]then[mv-field-row mv-field-added]else[mv-field-row]] }}}>
+						<div class="mv-field-header">
+							<span class="mv-field-name">
+								<%if [<snapshotHasField>match[0]] %>
+									<span class="rr-badge-circle rr-badge-added">+</span>
+								<%elseif [<currentHasField>match[0]] %>
+									<span class="rr-badge-circle rr-badge-removed">&minus;</span>
+								<%endif%>
+								<$text text=<<fieldName>>/>
+							</span>
+							<$button class="mv-field-reset tc-btn-invisible" tooltip="Reset this field to snapshot value">
+								<$action-minver op="rollback-field" title=<<originalTitle>> snapshot-id=<<snapshotId>> draft=<<draftTitle>> field=<<fieldName>>/>
+								<svg class="mv-undo-icon" width="12" height="12" viewBox="0 0 24 24"><path d="M9 10h8c2.2 0 4 1.8 4 4s-1.8 4-4 4h-2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M13 6L9 10l4 4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							</$button>
+						</div>
+						<div class="mv-field-diff">
+							<$diff-text source=<<snapshotVal>> dest=<<currentVal>>/>
+						</div>
+					</div>
+				<%endif%>
+				</$let>
+			</$list>
+		</div>
+
+		</$let>
+	</$list>
+<%else%>
+	<div class="rr-status-info mv-no-selection">Select a snapshot from the dropdown to see differences.</div>
+<%endif%>
+
+<!-- Empty state -->
+<$let snapshotCount={{{ [<snapshotsTiddler>get[text]jsonindexes[]count[]] ~[[0]] }}}>
+<%if [<snapshotCount>match[0]] %>
+	<div class="rr-status-info mv-empty">No snapshots yet. Click "Take snapshot" to create one.</div>
+<%endif%>
+</$let>
+
+</$let>
+\end
+<<minver-preview>>

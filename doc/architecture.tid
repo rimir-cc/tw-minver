@@ -1,0 +1,63 @@
+created: 20260310120000000
+modified: 20260310120000000
+rdt.order: 2
+rdt.plugin-key: minver
+rdt.plugin-name: minver
+rdt.plugin-subtitle: Browser-side tiddler versioning with snapshots
+rdt.section: Architecture
+title: $:/plugins/rimir/minver/doc/architecture
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Data flow
+
+# ''Startup'': `startup.js` loads all snapshots from localStorage (compressed), decompresses them, and writes them to `$:/temp/minver/snapshots/<title>` tiddlers
+# ''Auto-snapshot on save'': `save-hook.js` hooks `th-saving-tiddler`, captures the current (pre-save) fields, and stores an auto-snapshot
+# ''Manual snapshot'': User clicks "Snapshot draft" in the editor → `<$action-minver op="snapshot">` captures draft fields via `storage.js`
+# ''Viewing diffs'': The preview pane (`preview-snapshots.tid`) computes a union of snapshot fields and current tiddler fields, then renders per-field `<$diff-text>` comparisons
+# ''Rollback'': `<$action-minver op="rollback">` rebuilds the draft tiddler from scratch using only the snapshot's fields (extra fields are removed)
+
+!! Components
+
+|!Component |!Layer |!Role |
+|`storage.js` |Browser (library) |Compression, localStorage R/W, eviction, UUID generation, field capture |
+|`startup.js` |Browser (startup) |Hydrate `$:/temp/minver/*` from localStorage on wiki load |
+|`save-hook.js` |Browser (startup) |`th-saving-tiddler` hook for auto-snapshots, compare state reset |
+|`action-minver.js` |Browser (widget) |`<$action-minver>` — snapshot, delete, rollback, export, import, clean |
+|`preview-snapshots.tid` |Browser (UI) |Editor preview pane — diff view, toolbar, rollback buttons |
+|`manager.tid` |Browser (UI) |Standalone manager — browse, diff, export, import, clean all snapshots |
+
+!! Two-tier storage model
+
+|!Tier |!Persistence |!Auto-snapshots |!Manual snapshots |
+|Wiki store (`$:/temp/minver/`) |Session only |Always |Always |
+|localStorage |Across reloads |Opt-in via settings |Always |
+
+Both tiers use the same snapshot format. The wiki store is the primary data source for UI rendering. localStorage is the durable backing store loaded on startup.
+
+!! Eviction
+
+Separate counters per tiddler, per type:
+
+* `max-manual` (default: 3) — oldest manual snapshot evicted when exceeded
+* `max-auto` (default: 3) — oldest auto snapshot evicted when exceeded
+* Manual and auto snapshots never evict each other
+
+!! Design decisions
+
+* ''Browser-only'': No server-side code — works with single-file wikis and Node.js wikis alike
+* ''Compressed localStorage'': Native `CompressionStream`/`DecompressionStream` (deflate) + base64 encoding keeps storage footprint small
+* ''Temp tiddlers for UI'': Snapshots live in `$:/temp/minver/` so TW's reactive refresh drives the diff UI automatically
+* ''Rebuild on rollback'': Rollback constructs a new tiddler from scratch (not merge), ensuring fields added after the snapshot are properly removed
+* ''Compare state reset'': The `th-saving-tiddler` hook clears the compare mode state, so the next edit session defaults back to "Draft"
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/callout" type="warning">
+<$fill $name="body">
+localStorage is shared across all origins and typically limited to ~5-10MB. Enable "persist auto-snapshots" with caution and monitor usage via the settings page.
+</$fill>
+</$transclude>
+
+</$fill>
+</$transclude>

@@ -1,0 +1,52 @@
+created: 20260310120000000
+modified: 20260310120000000
+rdt.hub-category: tools
+rdt.hub-category-name: Tools
+rdt.hub-order: 1
+rdt.order: 1
+rdt.plugin-key: minver
+rdt.plugin-name: minver
+rdt.plugin-subtitle: Browser-side tiddler versioning with snapshots
+rdt.section: Overview
+title: $:/plugins/rimir/minver/doc/overview
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! What it does
+
+minver keeps snapshot versions of your tiddlers directly in the browser. Snapshots are stored compressed in localStorage, hydrated into `$:/temp/minver/*` on wiki load, and integrated as an editor preview type with per-field diffs and rollback.
+
+!! Features
+
+* ''Manual snapshots'' — take a snapshot anytime from the editor preview pane
+* ''Auto-snapshots'' — automatically captures the previous version on every save
+* ''Per-field diff view'' — side-by-side comparison with `<$diff-text>`, integrated as editor preview type
+* ''Field-level rollback'' — revert individual fields or the entire tiddler to a snapshot
+* ''Compressed storage'' — uses native `CompressionStream` API to minimize localStorage usage
+* ''Export/Import'' — transfer snapshots between wikis via drag-and-drop or JSON download
+* ''Snapshot Manager'' — browse, diff, and clean up all snapshots across the wiki
+
+!! Prerequisites
+
+* TiddlyWiki 5.3.0+
+* Theme plugin (`$:/plugins/rimir/theme`) for `rr-` utility classes
+* A modern browser with CompressionStream support (Chrome 80+, Firefox 113+, Safari 16.4+)
+
+!! Quick start
+
+# Open any tiddler for editing
+# Click the eye icon in the editor toolbar and select ''snapshots''
+# Click ''Snapshot draft'' to capture the current draft state
+# Edit the tiddler, then select your snapshot from the dropdown to see per-field diffs
+# Use the undo button next to any changed field to revert it
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/callout" type="info">
+<$fill $name="body">
+All data lives in the browser — no server interaction required. minver is entirely browser-side.
+</$fill>
+</$transclude>
+
+</$fill>
+</$transclude>

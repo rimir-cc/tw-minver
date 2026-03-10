@@ -1,0 +1,52 @@
+caption: {{$:/plugins/rimir/minver/icon}} minver
+created: 20260310120000000
+modified: 20260310120000000
+tags: $:/tags/ControlPanel/SettingsTab/Rimi
+title: $:/plugins/rimir/minver/settings
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+!! Snapshot limits
+
+<div class="rr-input-row">
+	Max manual snapshots per tiddler:
+	<$edit-text tiddler="$:/config/rimir/minver/max-manual" tag="input" default="3" class="rr-input" style="width:60px"/>
+	<span class="rr-muted">(user-created snapshots)</span>
+</div>
+
+<div class="rr-input-row">
+	Max auto snapshots per tiddler:
+	<$edit-text tiddler="$:/config/rimir/minver/max-auto" tag="input" default="3" class="rr-input" style="width:60px"/>
+	<span class="rr-muted">(created on save)</span>
+</div>
+
+!! Scope
+
+<div class="rr-input-row">
+	Auto-snapshot filter:
+	<$edit-text tiddler="$:/config/rimir/minver/scope-filter" tag="input" default="[all[]]" class="rr-input"/>
+</div>
+<div class="rr-muted">Only tiddlers matching this filter will get auto-snapshots on save. Default: <code>[all[]]</code> (all tiddlers).</div>
+
+!! Storage
+
+<div class="rr-input-row">
+	<$checkbox tiddler="$:/config/rimir/minver/auto-to-storage" field="text" checked="yes" unchecked="no" default="no">
+		Persist auto-snapshots to browser storage
+	</$checkbox>
+</div>
+
+<%if [[$:/config/rimir/minver/auto-to-storage]get[text]match[yes]] %>
+<div class="rr-callout rr-callout-warning">
+	⚠ Auto-snapshots will be saved to browser localStorage. This uses more space (~5-10MB limit shared with TiddlyWiki). Monitor usage in the [[manager|$:/plugins/rimir/minver/manager]].
+</div>
+<%endif%>
+
+<div class="rr-input-row" style="margin-top:12px">
+	Browser storage usage: <strong><$text text={{{ [[$:/temp/minver/storage-usage]get[text]else[calculating...]] }}}/></strong>
+</div>
+
+!! Actions
+
+Open the [[Snapshot Manager|$:/plugins/rimir/minver/manager]] to browse, export, import, or clean all snapshots.

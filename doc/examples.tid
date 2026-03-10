@@ -1,0 +1,84 @@
+created: 20260310120000000
+modified: 20260310120000000
+rdt.order: 4
+rdt.plugin-key: minver
+rdt.plugin-name: minver
+rdt.plugin-subtitle: Browser-side tiddler versioning with snapshots
+rdt.section: Examples
+title: $:/plugins/rimir/minver/doc/examples
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Using the editor preview
+
+# Open any tiddler for editing
+# Click the ''eye icon'' (👁) in the editor toolbar
+# Select ''snapshots'' from the dropdown — this replaces the preview pane
+# The snapshot toolbar appears with:
+#* ''Snapshot draft'' button + optional label input
+#* ''Compare [Draft|Saved] with:'' toggle + snapshot dropdown
+# Take a snapshot, make some changes, then select the snapshot to see diffs
+
+!! Taking a snapshot with a label
+
+Enter a descriptive label before clicking "Snapshot draft":
+
+```
+Label: "before refactoring tags"  →  Click [Snapshot draft]
+```
+
+If no label is provided, a timestamp-based label is generated automatically.
+
+!! Comparing Draft vs Saved
+
+The toggle switches what the snapshot is compared against:
+
+* ''Draft'' (default): Compares the snapshot against your current unsaved edits
+* ''Saved'': Compares the snapshot against the last saved version of the tiddler
+
+!! Rolling back a single field
+
+When viewing a diff, each changed field has an undo button (↩). Clicking it:
+
+* If the field exists in the snapshot: restores that field's value on the draft
+* If the field does ''not'' exist in the snapshot: removes the field from the draft
+
+!! Rolling back all fields
+
+The ''Rollback all'' button replaces the entire draft with the snapshot's fields. Fields that were added after the snapshot was taken are removed.
+
+!! Using the action widget in custom UI
+
+```
+<!-- Take a manual snapshot -->
+<$button>
+  Snapshot current version
+  <$action-minver op="snapshot" title="My Tiddler" label="before cleanup"/>
+</$button>
+
+<!-- Rollback to a specific snapshot -->
+<$button>
+  Restore backup
+  <$action-minver op="rollback" title="My Tiddler" snapshot-id="abc-123" draft=<<draftTitle>>/>
+</$button>
+```
+
+!! Exporting and importing snapshots
+
+# Open the [[Snapshot Manager|$:/plugins/rimir/minver/manager]]
+# Click ''Export all Snapshots'' — creates `$:/minver/export`
+# Either:
+#* ''Drag'' the export widget into another wiki's browser tab
+#* ''Download'' as `minver-snapshots.json` and import manually
+# In the target wiki, click ''Import Snapshots'' to load them
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/callout" type="tip">
+<$fill $name="body">
+The export includes both auto and manual snapshots from all tiddlers in localStorage.
+</$fill>
+</$transclude>
+
+</$fill>
+</$transclude>
