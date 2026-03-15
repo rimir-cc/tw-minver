@@ -2,5 +2,6 @@ title: $:/plugins/rimir/minver/changelog
 type: text/vnd.tiddlywiki
 
 |!Version |!Date |!Changes |
+|v0.1.2 |2026-03-15 |Add regression tests and CI test gate |
 |0.1.1 |2026-03-15 |Fix th-deleting-tiddler hook: return tiddler instead of true to preserve hook chain, add null guard for upstream hooks returning undefined |
 |0.1.0 |2026-03-10 |Initial release: manual/auto snapshots, diff preview, manager, settings, export/import |
