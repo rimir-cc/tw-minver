@@ -1,0 +1,26 @@
+# minver — browser-side tiddler versioning
+
+Keep snapshot versions of your tiddlers directly in the browser. Snapshots are stored compressed in localStorage and survive page reloads.
+
+## Key features
+
+- **Manual snapshots** — take a snapshot anytime from the editor preview pane
+- **Auto-snapshots** — automatically captures the previous version on every save
+- **Diff view** — per-field comparison with `<$diff-text>`, integrated as an editor preview type
+- **Field-level rollback** — revert individual fields or the entire tiddler
+- **Compressed storage** — uses native CompressionStream to minimize localStorage usage
+- **Export/Import** — transfer snapshots between wikis via a single JSON tiddler
+
+## Quick start
+
+1. Open any tiddler for editing
+2. Click the eye icon in the editor toolbar and select "snapshots"
+3. Click "Take snapshot" to create a manual snapshot
+4. Edit the tiddler, then select your snapshot to see the diff
+5. Use the undo button next to any field to revert it
+
+## Prerequisites
+
+- TiddlyWiki 5.3.0+
+- Theme plugin (`$:/plugins/rimir/theme`)
+- A modern browser with CompressionStream support (Chrome 80+, Firefox 113+, Safari 16.4+)
