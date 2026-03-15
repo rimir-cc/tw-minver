@@ -13,6 +13,7 @@ exports.startup = function() {
 	var storage = require("$:/plugins/rimir/minver/storage.js");
 
 	$tw.hooks.addHook("th-saving-tiddler", function(tiddler) {
+		if (!tiddler) return tiddler;
 		var title = tiddler.fields.title;
 		if (!title) return tiddler;
 		// Ignore temp/state/draft tiddlers

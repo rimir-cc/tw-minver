@@ -1,0 +1,27 @@
+created: 20260315120000000
+modified: 20260315120000000
+rdt.order: 6
+rdt.plugin-key: minver
+rdt.plugin-name: minver
+rdt.plugin-subtitle: Browser-side tiddler versioning with snapshots
+rdt.section: FAQ
+title: $:/plugins/rimir/minver/doc/faq
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Q: My snapshots disappear after closing the browser. Why?
+
+By default, auto-snapshots are stored only in the wiki's temp tiddlers (session-only). Enable "Persist auto-snapshots to localStorage" in Settings to keep them across sessions. Manual snapshots are always persisted to localStorage.
+
+!! Q: How much localStorage space do snapshots use?
+
+Snapshots are compressed using the native `CompressionStream` API (deflate + base64). Typical compression ratios are 60-80% for text content. Monitor usage via the settings page, which shows current localStorage consumption. Most browsers limit localStorage to 5-10 MB per origin.
+
+!! Q: Can I transfer snapshots between wikis?
+
+Yes. Use the Export button in the Snapshot Manager to serialize all snapshots into a `$:/minver/export` tiddler as JSON. Drag this tiddler (or download and import the JSON) into another wiki, then use the Import button to load the snapshots into localStorage and the wiki store.
+
+</$fill>
+</$transclude>

@@ -1,0 +1,39 @@
+created: 20260315120000000
+modified: 20260315120000000
+rdt.order: 7
+rdt.plugin-key: minver
+rdt.plugin-name: minver
+rdt.plugin-subtitle: Browser-side tiddler versioning with snapshots
+rdt.section: TW Internals
+title: $:/plugins/rimir/minver/doc/tw-internals
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! th-saving-tiddler hook
+
+`save-hook.js` hooks `th-saving-tiddler` to capture the current (pre-save) tiddler state as an auto-snapshot before the save completes. The hook also clears the compare mode state (`$:/state/minver/compare/<title>`) so the next edit session defaults to "Compare Draft".
+
+!! $:/tags/EditPreview
+
+`preview-snapshots.tid` is tagged `$:/tags/EditPreview`, making it available as an editor preview type. Users select it from the eye icon dropdown in the editor toolbar. TiddlyWiki renders the selected preview type below the editor text area.
+
+!! $:/temp/ prefix
+
+All snapshot tiddlers use the `$:/temp/minver/` prefix. TiddlyWiki treats `$:/temp/` tiddlers as ephemeral — they are excluded from the skinny tiddler list, not synced to the server, and not persisted to disk. This is appropriate because minver uses localStorage as its durable backing store.
+
+!! $tw.Tiddler constructor
+
+Rollback builds a new tiddler using `new $tw.Tiddler(fields)`. The constructor accepts an object of field values. Unlike merging two tiddlers (`new $tw.Tiddler(oldTiddler, newFields)`), constructing from a single object ensures only the snapshot's fields exist — extra fields added after the snapshot are properly removed.
+
+!! $diff-text widget
+
+The preview pane uses TiddlyWiki's built-in `<$diff-text>` widget to render per-field diffs between the snapshot and the current draft. This widget produces a side-by-side or inline diff view with highlighted additions and deletions.
+
+!! CompressionStream / DecompressionStream
+
+Native browser APIs for gzip/deflate compression. minver uses the "deflate" algorithm to compress JSON-serialized snapshots before base64-encoding them for localStorage. These APIs are async (return ReadableStreams), so all storage operations return Promises.
+
+</$fill>
+</$transclude>
