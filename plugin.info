@@ -3,7 +3,7 @@
     "description": "Browser-side tiddler versioning with snapshots",
     "name": "minver",
     "author": "rimir",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "core-version": ">=5.3.0",
     "source": "https://github.com/rimir-cc/tw-minver",
     "plugin-type": "plugin",

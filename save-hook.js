@@ -41,11 +41,12 @@ exports.startup = function() {
 	});
 
 	$tw.hooks.addHook("th-deleting-tiddler", function(tiddler) {
+		if (!tiddler) return tiddler;
 		var title = tiddler.fields.title;
-		if (!title) return true;
+		if (!title) return tiddler;
 		// Ignore temp/state/draft tiddlers
-		if (title.indexOf("$:/temp/") === 0 || title.indexOf("$:/state/") === 0) return true;
-		if (tiddler.fields["draft.of"]) return true;
+		if (title.indexOf("$:/temp/") === 0 || title.indexOf("$:/state/") === 0) return tiddler;
+		if (tiddler.fields["draft.of"]) return tiddler;
 		// Remove snapshots from wiki store
 		var tempTitle = storage.getTempTitle(title);
 		if ($tw.wiki.getTiddler(tempTitle)) {
@@ -53,6 +54,6 @@ exports.startup = function() {
 		}
 		// Remove from localStorage
 		storage.saveToLocalStorage(title, []);
-		return true;
+		return tiddler;
 	});
 };
