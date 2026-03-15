@@ -1,0 +1,4 @@
+title: $:/plugins/rimir/minver/icon/undo
+type: image/svg+xml
+
+<svg width="12" height="12" viewBox="0 0 24 24"><path d="M9 10h8c2.2 0 4 1.8 4 4s-1.8 4-4 4h-2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M13 6L9 10l4 4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>

@@ -169,7 +169,7 @@ type: text/vnd.tiddlywiki
 }
 
 .mv-field-added {
-	border-color: #28a745;
+	border-color: <<colour diff-insert-background>>;
 }
 
 .mv-field-added .mv-field-header {
@@ -177,14 +177,14 @@ type: text/vnd.tiddlywiki
 }
 
 .mv-field-removed {
-	border-color: #d9534f;
+	border-color: <<colour alert-highlight>>;
 }
 
 .mv-field-removed .mv-field-header {
 	background: rgba(217, 83, 79, 0.1);
 }
 
-.mv-undo-icon {
+.mv-field-reset svg {
 	vertical-align: middle;
 }
 
@@ -199,7 +199,7 @@ type: text/vnd.tiddlywiki
 }
 
 .mv-icon-btn-danger:hover {
-	color: #d9534f;
+	color: <<colour alert-highlight>>;
 }
 
 .mv-select-delete {
@@ -269,6 +269,10 @@ type: text/vnd.tiddlywiki
 
 .mv-download-btn:hover {
 	background: rgba(100, 149, 237, 0.1);
+}
+
+.mv-btn-danger {
+	background: <<colour alert-highlight>>;
 }
 
 /* Status messages */

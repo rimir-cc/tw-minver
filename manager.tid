@@ -21,7 +21,7 @@ type: text/vnd.tiddlywiki
 		</$action-confirm>
 		Import Snapshots
 	</$button>
-	<$button class="tc-btn-big-green" style="background:#d9534f; margin-right:8px">
+	<$button class="tc-btn-big-green mv-btn-danger" style="margin-right:8px">
 		<$action-confirm $message="Clear ALL snapshots from browser storage? This cannot be undone.">
 		<$action-minver op="clean-all"/>
 		</$action-confirm>
@@ -34,13 +34,13 @@ type: text/vnd.tiddlywiki
 <div class="mv-export-drag">
 	<$draggable tiddler="$:/minver/export" class="mv-export-drag-handle">
 		<span class="mv-export-drag-icon">
-			<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+			<$transclude $tiddler="$:/plugins/rimir/minver/icon/download"/>
 		</span>
 		Drag <code>$:/minver/export</code> to another wiki to transfer snapshots
 	</$draggable>
 	<$button class="tc-btn-invisible mv-download-btn" tooltip="Download as JSON file">
 		<$action-sendmessage $message="tm-download-file" $param="$:/minver/export" filename="minver-snapshots.json"/>
-		<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+		<$transclude $tiddler="$:/plugins/rimir/minver/icon/download"/>
 		Download
 	</$button>
 </div>
@@ -94,14 +94,14 @@ type: text/vnd.tiddlywiki
 					<td class="mv-manager-actions">
 						<$button class="tc-btn-invisible mv-icon-btn" tooltip="Show diff against current saved state">
 							<$action-setfield $tiddler=<<diffState>> text={{{ [<diffState>get[text]match[open]then[closed]else[open]] }}}/>
-							<$reveal type="match" state=<<diffState>> text="open" tag="span"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></$reveal>
-							<$reveal type="nomatch" state=<<diffState>> text="open" tag="span"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></$reveal>
+							<$reveal type="match" state=<<diffState>> text="open" tag="span"><$transclude $tiddler="$:/plugins/rimir/minver/icon/chevron-down"/></$reveal>
+							<$reveal type="nomatch" state=<<diffState>> text="open" tag="span"><$transclude $tiddler="$:/plugins/rimir/minver/icon/chevron-right"/></$reveal>
 						</$button>
 						<$button class="mv-icon-btn mv-icon-btn-danger tc-btn-invisible" tooltip="Delete this snapshot">
 							<$action-confirm $message={{{ [[Delete snapshot ']addsuffix<slabel>addsuffix[' from ']addsuffix<tiddlerTitle>addsuffix['?]] }}}>
 							<$action-minver op="delete" title=<<tiddlerTitle>> snapshot-id=<<sid>>/>
 							</$action-confirm>
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+							<$transclude $tiddler="$:/plugins/rimir/minver/icon/delete"/>
 						</$button>
 					</td>
 				</tr>
