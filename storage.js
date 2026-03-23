@@ -98,11 +98,15 @@ function getSnapshotsFromStore(wiki, tiddlerTitle) {
 
 function saveSnapshotsToStore(wiki, tiddlerTitle, snapshots) {
 	var tempTitle = getTempTitle(tiddlerTitle);
-	wiki.addTiddler(new $tw.Tiddler({
-		title: tempTitle,
-		text: JSON.stringify(snapshots),
-		type: "application/json"
-	}));
+	if (!snapshots || snapshots.length === 0) {
+		wiki.deleteTiddler(tempTitle);
+	} else {
+		wiki.addTiddler(new $tw.Tiddler({
+			title: tempTitle,
+			text: JSON.stringify(snapshots),
+			type: "application/json"
+		}));
+	}
 }
 
 // --- localStorage R/W (async, compressed) ---
@@ -194,26 +198,13 @@ function getLocalStorageUsage() {
 	return totalBytes;
 }
 
-// --- Snapshot creation ---
+// --- Field serialization ---
 
-function captureTiddlerFields(wiki, title, useDraft) {
-	var tiddler;
-	if (useDraft) {
-		// Find draft of this tiddler
-		var draftTitle = wiki.findDraft(title);
-		if (draftTitle) {
-			tiddler = wiki.getTiddler(draftTitle);
-		}
-	}
-	if (!tiddler) {
-		tiddler = wiki.getTiddler(title);
-	}
-	if (!tiddler) return null;
+function serializeTiddlerFields(rawFields) {
 	var fields = {};
-	for (var field in tiddler.fields) {
-		if (Object.prototype.hasOwnProperty.call(tiddler.fields, field)) {
-			var val = tiddler.fields[field];
-			// Convert dates and arrays
+	for (var field in rawFields) {
+		if (Object.prototype.hasOwnProperty.call(rawFields, field)) {
+			var val = rawFields[field];
 			if (val instanceof Date) {
 				fields[field] = $tw.utils.stringifyDate(val);
 			} else if (Array.isArray(val)) {
@@ -223,6 +214,24 @@ function captureTiddlerFields(wiki, title, useDraft) {
 			}
 		}
 	}
+	return fields;
+}
+
+// --- Snapshot creation ---
+
+function captureTiddlerFields(wiki, title, useDraft) {
+	var tiddler;
+	if (useDraft) {
+		var draftTitle = wiki.findDraft(title);
+		if (draftTitle) {
+			tiddler = wiki.getTiddler(draftTitle);
+		}
+	}
+	if (!tiddler) {
+		tiddler = wiki.getTiddler(title);
+	}
+	if (!tiddler) return null;
+	var fields = serializeTiddlerFields(tiddler.fields);
 	// Remove draft fields — store original title
 	if (fields["draft.of"]) {
 		fields.title = fields["draft.of"];
@@ -268,6 +277,45 @@ function isAutoToStorage(wiki) {
 	return getConfig(wiki, "auto-to-storage", "no") === "yes";
 }
 
+// --- Shared helpers ---
+
+function fieldsEqual(a, b) {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	var keysA = Object.keys(a);
+	var keysB = Object.keys(b);
+	if (keysA.length !== keysB.length) return false;
+	for (var i = 0; i < keysA.length; i++) {
+		if (a[keysA[i]] !== b[keysA[i]]) return false;
+	}
+	return true;
+}
+
+function findSnapshot(snapshots, snapshotId) {
+	for (var i = 0; i < snapshots.length; i++) {
+		if (snapshots[i].id === snapshotId) {
+			return snapshots[i];
+		}
+	}
+	return null;
+}
+
+function updateStorageUsage() {
+	var bytes = getLocalStorageUsage();
+	var label;
+	if (bytes < 1024) {
+		label = bytes + " B";
+	} else if (bytes < 1024 * 1024) {
+		label = (bytes / 1024).toFixed(1) + " KB";
+	} else {
+		label = (bytes / (1024 * 1024)).toFixed(2) + " MB";
+	}
+	$tw.wiki.addTiddler(new $tw.Tiddler({
+		title: "$:/temp/minver/storage-usage",
+		text: label
+	}));
+}
+
 // --- Exports ---
 
 exports.compress = compress;
@@ -289,5 +337,9 @@ exports.getMaxManual = getMaxManual;
 exports.getMaxAuto = getMaxAuto;
 exports.getScopeFilter = getScopeFilter;
 exports.isAutoToStorage = isAutoToStorage;
+exports.serializeTiddlerFields = serializeTiddlerFields;
+exports.fieldsEqual = fieldsEqual;
+exports.findSnapshot = findSnapshot;
+exports.updateStorageUsage = updateStorageUsage;
 exports.TEMP_PREFIX = TEMP_PREFIX;
 exports.STORAGE_PREFIX = STORAGE_PREFIX;

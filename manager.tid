@@ -97,6 +97,12 @@ type: text/vnd.tiddlywiki
 							<$reveal type="match" state=<<diffState>> text="open" tag="span"><$transclude $tiddler="$:/plugins/rimir/minver/icon/chevron-down"/></$reveal>
 							<$reveal type="nomatch" state=<<diffState>> text="open" tag="span"><$transclude $tiddler="$:/plugins/rimir/minver/icon/chevron-right"/></$reveal>
 						</$button>
+						<$button class="tc-btn-invisible mv-icon-btn" tooltip="Revert tiddler to this snapshot">
+							<$action-confirm $message={{{ [[Revert ']addsuffix<tiddlerTitle>addsuffix[' to snapshot ']addsuffix<slabel>addsuffix['? A safety snapshot of the current state will be taken first.]] }}}>
+							<$action-minver op="revert" title=<<tiddlerTitle>> snapshot-id=<<sid>>/>
+							</$action-confirm>
+							<$transclude $tiddler="$:/plugins/rimir/minver/icon/undo"/>
+						</$button>
 						<$button class="mv-icon-btn mv-icon-btn-danger tc-btn-invisible" tooltip="Delete this snapshot">
 							<$action-confirm $message={{{ [[Delete snapshot ']addsuffix<slabel>addsuffix[' from ']addsuffix<tiddlerTitle>addsuffix['?]] }}}>
 							<$action-minver op="delete" title=<<tiddlerTitle>> snapshot-id=<<sid>>/>

@@ -280,3 +280,138 @@ type: text/vnd.tiddlywiki
 .mv-empty {
 	margin: 8px;
 }
+
+/* ===== Change-Groups ===== */
+
+/* Recording icon — pulsing red dot in toolbar */
+.mv-cg-recording-icon {
+	display: inline-flex;
+	color: <<colour alert-highlight>>;
+	animation: mv-cg-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mv-cg-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.3; }
+}
+
+/* Stop button in toolbar and viewer */
+.mv-cg-stop-btn {
+	background: <<colour alert-highlight>>;
+}
+
+/* Popup for start recording (toolbar + viewer) */
+.mv-cg-popup-inner {
+	padding: 8px;
+	display: flex;
+	gap: 6px;
+	align-items: center;
+}
+
+.mv-cg-popup-label {
+	min-width: 160px;
+}
+
+/* Active recording banner */
+.mv-cg-active-banner {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	margin: 8px 0;
+	border: 1px solid <<colour alert-highlight>>;
+	border-radius: 4px;
+	background: rgba(217, 83, 79, 0.08);
+}
+
+.mv-cg-recording-dot {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: <<colour alert-highlight>>;
+	animation: mv-cg-pulse 1.5s ease-in-out infinite;
+}
+
+/* Actions bar */
+.mv-cg-actions-bar {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 8px;
+	flex-wrap: wrap;
+}
+
+/* Group card */
+.mv-cg-group {
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 4px;
+	margin-bottom: 6px;
+	overflow: hidden;
+}
+
+.mv-cg-group-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	background: <<colour tiddler-editor-border>>;
+	flex-wrap: wrap;
+}
+
+.mv-cg-group-label {
+	font-weight: bold;
+	font-size: 0.95em;
+}
+
+.mv-cg-op-count {
+	background: <<colour muted-foreground>>;
+	font-size: 0.8em;
+}
+
+/* Operation type badges */
+.mv-cg-type-create {
+	background: #28a745;
+}
+
+.mv-cg-type-modify {
+	background: <<colour primary>>;
+}
+
+.mv-cg-type-delete {
+	background: <<colour alert-highlight>>;
+}
+
+/* Operations table */
+.mv-cg-ops-table {
+	width: 100%;
+}
+
+.mv-cg-op-actions {
+	text-align: right;
+}
+
+/* Diff cell inside operations table */
+.mv-cg-diff-cell {
+	padding: 0 !important;
+	background: <<colour page-background>>;
+}
+
+.mv-cg-diff-inner {
+	margin: 6px 6px 6px 24px;
+	padding: 8px;
+	background: <<colour tiddler-background>>;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 4px;
+	border-left: 3px solid <<colour primary>>;
+}
+
+/* Live recording table */
+.mv-cg-live-table {
+	margin: 0 0 12px 0;
+	border-left: 3px solid <<colour alert-highlight>>;
+}
+
+/* Empty state */
+.mv-cg-empty {
+	margin: 12px 0;
+}

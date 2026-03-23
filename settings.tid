@@ -47,6 +47,16 @@ type: text/vnd.tiddlywiki
 	Browser storage usage: <strong><$text text={{{ [[$:/temp/minver/storage-usage]get[text]else[calculating...]] }}}/></strong>
 </div>
 
+!! Change-groups
+
+<div class="rr-input-row">
+	Max change-groups in storage:
+	<$edit-text tiddler="$:/config/rimir/minver/max-groups" tag="input" default="10" class="rr-input" style="width:60px"/>
+	<span class="rr-muted">(oldest evicted when exceeded)</span>
+</div>
+
+Open the [[Change-groups viewer|$:/plugins/rimir/minver/groups]] to browse, rollback, or delete recorded change-groups.
+
 !! Actions
 
 Open the [[Snapshot Manager|$:/plugins/rimir/minver/manager]] to browse, export, import, or clean all snapshots.

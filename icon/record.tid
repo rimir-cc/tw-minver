@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/minver/icon/record
+tags: $:/tags/Image
+
+\parameters (size:"22pt")
+<svg width=<<size>> height=<<size>> class="tc-image-button" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="currentColor"/></svg>

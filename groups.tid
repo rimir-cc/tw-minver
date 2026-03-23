@@ -1,0 +1,238 @@
+caption: {{$:/plugins/rimir/minver/icon}} groups
+created: 20260322120000000
+modified: 20260322120000000
+title: $:/plugins/rimir/minver/groups
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\procedure minver-groups()
+
+<div class="mv-cg-viewer">
+
+<!-- Top actions -->
+<div class="mv-cg-actions-bar">
+	<%if [[$:/temp/minver/cg-recording]get[text]!is[blank]] %>
+		<$button class="tc-btn-big-green mv-cg-stop-btn">
+			<$action-minver op="cg-stop"/>
+			<$transclude $tiddler="$:/plugins/rimir/minver/icon/stop"/>
+			Stop recording
+		</$button>
+	<%else%>
+		<$button class="tc-btn-big-green">
+			<$action-minver op="cg-start"/>
+			<$transclude $tiddler="$:/plugins/rimir/minver/icon/record"/>
+			Start recording
+		</$button>
+	<%endif%>
+	<$button class="tc-btn-big-green mv-btn-danger">
+		<$action-confirm $message="Delete ALL change-groups from browser storage? This cannot be undone.">
+		<$action-minver op="cg-delete-all"/>
+		</$action-confirm>
+		Delete all groups
+	</$button>
+</div>
+
+<!-- Active recording indicator + live log -->
+<%if [[$:/temp/minver/cg-recording]get[text]!is[blank]] %>
+<$let
+	activeGroupTiddler="$:/temp/minver/cg-active-group"
+	opCount={{{ [[$:/temp/minver/cg-active-group]get[text]jsonindexes[operations]count[]] ~[[0]] }}}
+>
+<div class="mv-cg-active-banner">
+	<span class="mv-cg-recording-dot"></span>
+	<strong>Recording active</strong>
+	<span class="rr-muted">— <$text text=<<opCount>>/>&nbsp;change(s) captured</span>
+</div>
+
+<%if [<opCount>!match[0]] %>
+<table class="rr-table mv-cg-live-table">
+	<tr><th>Type</th><th>Title</th><th>Time</th></tr>
+	<$list filter="[<activeGroupTiddler>get[text]jsonindexes[operations]] +[reverse[]]" variable="opIdx">
+		<$let
+			opType={{{ [<activeGroupTiddler>get[text]jsonget[operations],<opIdx>,[type]] }}}
+			opTitle={{{ [<activeGroupTiddler>get[text]jsonget[operations],<opIdx>,[title]] }}}
+			opTimestamp={{{ [<activeGroupTiddler>get[text]jsonget[operations],<opIdx>,[timestamp]] }}}
+		>
+		<tr>
+			<td>
+				<span class={{{ [<opType>match[create]then[rr-badge-rect mv-cg-type-create]] [<opType>match[modify]then[rr-badge-rect mv-cg-type-modify]] [<opType>match[delete]then[rr-badge-rect mv-cg-type-delete]] +[first[]] }}}>
+					<$text text=<<opType>>/>
+				</span>
+			</td>
+			<td><$link to=<<opTitle>>><$text text=<<opTitle>>/></$link></td>
+			<td class="rr-muted rr-small rr-nowrap"><$text text={{{ [<opTimestamp>format:timestamp[0hh:0mm:0ss]] }}}/></td>
+		</tr>
+		</$let>
+	</$list>
+</table>
+<%endif%>
+</$let>
+<%endif%>
+
+<!-- Group list -->
+<$let indexTiddler="$:/temp/minver/change-groups">
+<$let groupCount={{{ [<indexTiddler>get[text]jsonindexes[]count[]] ~[[0]] }}}>
+<%if [<groupCount>match[0]] %>
+	<%if [[$:/temp/minver/cg-recording]get[text]is[blank]] %>
+		<div class="rr-status-info mv-cg-empty">No change-groups recorded yet. Click "Start recording" to begin.</div>
+	<%endif%>
+<%else%>
+	<!-- List groups newest first (reverse index order) -->
+	<$list filter="[<indexTiddler>get[text]jsonindexes[]] +[reverse[]]" variable="idx">
+		<$let
+			gid={{{ [<indexTiddler>get[text]jsonget<idx>,[id]] }}}
+			glabel={{{ [<indexTiddler>get[text]jsonget<idx>,[label]] }}}
+			gstart={{{ [<indexTiddler>get[text]jsonget<idx>,[startTime]] }}}
+			gend={{{ [<indexTiddler>get[text]jsonget<idx>,[endTime]] }}}
+			gopcount={{{ [<indexTiddler>get[text]jsonget<idx>,[opCount]] }}}
+			expandState={{{ [[$:/state/minver/cg-expand/]addsuffix<gid>] }}}
+			groupDataState={{{ [[$:/temp/minver/cg-group/]addsuffix<gid>] }}}
+		>
+		<div class="mv-cg-group">
+			<div class="mv-cg-group-header">
+				<$button class="tc-btn-invisible mv-cg-toggle">
+					<$action-setfield $tiddler=<<expandState>> text={{{ [<expandState>get[text]match[open]then[closed]else[open]] }}}/>
+					<$action-minver op="cg-load" group-id=<<gid>>/>
+					<$reveal type="match" state=<<expandState>> text="open" tag="span">▾</$reveal>
+					<$reveal type="nomatch" state=<<expandState>> text="open" tag="span">▸</$reveal>
+				</$button>
+				<span class="mv-cg-group-label"><$text text=<<glabel>>/></span>
+				<span class="rr-muted rr-small rr-nowrap">
+					<$text text={{{ [<gstart>format:timestamp[YYYY-0MM-0DD 0hh:0mm]] }}}/>
+					→
+					<$text text={{{ [<gend>format:timestamp[0hh:0mm]] }}}/>
+				</span>
+				<span class="rr-badge-rect mv-cg-op-count"><$text text=<<gopcount>>/> ops</span>
+				<$button class="rr-link-btn tc-btn-invisible" tooltip="Rollback all changes in this group">
+					<$action-confirm $message={{{ [[Rollback all changes in ']addsuffix<glabel>addsuffix['? This will undo all recorded operations.]] }}}>
+					<$action-minver op="cg-rollback" group-id=<<gid>>/>
+					</$action-confirm>
+					<$transclude $tiddler="$:/plugins/rimir/minver/icon/undo"/>
+					Rollback
+				</$button>
+				<$button class="rr-link-btn rr-link-btn-danger tc-btn-invisible" tooltip="Delete this change-group">
+					<$action-confirm $message={{{ [[Delete change-group ']addsuffix<glabel>addsuffix['?]] }}}>
+					<$action-minver op="cg-delete" group-id=<<gid>>/>
+					</$action-confirm>
+					Delete
+				</$button>
+			</div>
+
+			<$reveal type="match" state=<<expandState>> text="open" animate="yes">
+			<!-- Load group data from localStorage on expand -->
+			<$vars loadedData={{{ [<groupDataState>get[text]] }}}>
+			<%if [<loadedData>is[blank]] %>
+				<div class="rr-status-info">Loading group data...</div>
+			<%else%>
+				<table class="rr-table mv-cg-ops-table">
+					<tr><th>Type</th><th>Title</th><th>Time</th><th></th></tr>
+					<$list filter="[<groupDataState>get[text]jsonindexes[operations]]" variable="opIdx">
+						<$let
+							opId={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[id]] }}}
+							opType={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[type]] }}}
+							opTitle={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[title]] }}}
+							opTimestamp={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[timestamp]] }}}
+							diffState={{{ [[$:/state/minver/cg-op-diff/]addsuffix<gid>addsuffix[/]addsuffix<opId>] }}}
+						>
+						<tr>
+							<td>
+								<span class={{{ [<opType>match[create]then[rr-badge-rect mv-cg-type-create]] [<opType>match[modify]then[rr-badge-rect mv-cg-type-modify]] [<opType>match[delete]then[rr-badge-rect mv-cg-type-delete]] +[first[]] }}}>
+									<$text text=<<opType>>/>
+								</span>
+							</td>
+							<td><$link to=<<opTitle>>><$text text=<<opTitle>>/></$link></td>
+							<td class="rr-muted rr-small rr-nowrap"><$text text={{{ [<opTimestamp>format:timestamp[0hh:0mm:0ss]] }}}/></td>
+							<td class="mv-cg-op-actions">
+								<$button class="tc-btn-invisible mv-icon-btn" tooltip="Show field diffs">
+									<$action-setfield $tiddler=<<diffState>> text={{{ [<diffState>get[text]match[open]then[closed]else[open]] }}}/>
+									<$reveal type="match" state=<<diffState>> text="open" tag="span"><$transclude $tiddler="$:/plugins/rimir/minver/icon/chevron-down"/></$reveal>
+									<$reveal type="nomatch" state=<<diffState>> text="open" tag="span"><$transclude $tiddler="$:/plugins/rimir/minver/icon/chevron-right"/></$reveal>
+								</$button>
+							</td>
+						</tr>
+						<$reveal type="match" state=<<diffState>> text="open" tag="tr">
+							<td colspan="4" class="mv-cg-diff-cell">
+								<div class="mv-field-diffs mv-cg-diff-inner">
+								<%if [<opType>match[create]] %>
+									<!-- Creation: show all after fields as additions -->
+									<$list filter="[<groupDataState>get[text]jsonindexes[operations],<opIdx>,[after]]" variable="fieldName">
+										<$let fieldVal={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[after],<fieldName>] }}}>
+										<div class="mv-field-row mv-field-added">
+											<div class="mv-field-header">
+												<span class="mv-field-name">
+													<span class="rr-badge-circle rr-badge-added">+</span>
+													<$text text=<<fieldName>>/>
+												</span>
+											</div>
+											<div class="mv-field-diff">
+												<$diff-text source="" dest=<<fieldVal>>/>
+											</div>
+										</div>
+										</$let>
+									</$list>
+								<%elseif [<opType>match[delete]] %>
+									<!-- Deletion: show all before fields as removals -->
+									<$list filter="[<groupDataState>get[text]jsonindexes[operations],<opIdx>,[before]]" variable="fieldName">
+										<$let fieldVal={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[before],<fieldName>] }}}>
+										<div class="mv-field-row mv-field-removed">
+											<div class="mv-field-header">
+												<span class="mv-field-name">
+													<span class="rr-badge-circle rr-badge-removed">&minus;</span>
+													<$text text=<<fieldName>>/>
+												</span>
+											</div>
+											<div class="mv-field-diff">
+												<$diff-text source=<<fieldVal>> dest=""/>
+											</div>
+										</div>
+										</$let>
+									</$list>
+								<%elseif [<opType>match[modify]] %>
+									<!-- Modification: show per-field diffs (only changed fields) -->
+									<$list filter="[<groupDataState>get[text]jsonindexes[operations],<opIdx>,[before]] [<groupDataState>get[text]jsonindexes[operations],<opIdx>,[after]] +[sort[]]" variable="fieldName">
+										<$let
+											beforeVal={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[before],<fieldName>] +[else[]] }}}
+											afterVal={{{ [<groupDataState>get[text]jsonget[operations],<opIdx>,[after],<fieldName>] +[else[]] }}}
+											beforeHas={{{ [<groupDataState>get[text]jsonindexes[operations],<opIdx>,[before]match<fieldName>count[]] }}}
+											afterHas={{{ [<groupDataState>get[text]jsonindexes[operations],<opIdx>,[after]match<fieldName>count[]] }}}
+										>
+										<%if [<beforeVal>!match<afterVal>] %>
+											<div class={{{ [<beforeHas>match[0]then[mv-field-row mv-field-added]] [<afterHas>match[0]then[mv-field-row mv-field-removed]] +[else[mv-field-row]first[]] }}}>
+												<div class="mv-field-header">
+													<span class="mv-field-name">
+														<%if [<beforeHas>match[0]] %>
+															<span class="rr-badge-circle rr-badge-added">+</span>
+														<%elseif [<afterHas>match[0]] %>
+															<span class="rr-badge-circle rr-badge-removed">&minus;</span>
+														<%endif%>
+														<$text text=<<fieldName>>/>
+													</span>
+												</div>
+												<div class="mv-field-diff">
+													<$diff-text source=<<beforeVal>> dest=<<afterVal>>/>
+												</div>
+											</div>
+										<%endif%>
+										</$let>
+									</$list>
+								<%endif%>
+								</div>
+							</td>
+						</$reveal>
+						</$let>
+					</$list>
+				</table>
+			<%endif%>
+			</$vars>
+			</$reveal>
+		</div>
+		</$let>
+	</$list>
+<%endif%>
+</$let>
+</$let>
+
+</div>
+
+\end
+<<minver-groups>>

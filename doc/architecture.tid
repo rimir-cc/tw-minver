@@ -53,6 +53,44 @@ Separate counters per tiddler, per type:
 * ''Rebuild on rollback'': Rollback constructs a new tiddler from scratch (not merge), ensuring fields added after the snapshot are properly removed
 * ''Compare state reset'': The `th-saving-tiddler` hook clears the compare mode state, so the next edit session defaults back to "Draft"
 
+!! Change-group storage model
+
+Change-groups are stored in localStorage with a similar compressed pattern to snapshots:
+
+* ''Per-group key'': `minver-cg:<group-id>` — compressed JSON of the full group (operations + metadata)
+* ''Index key'': `minver-cg-index` — compressed JSON array of group summaries (id, label, startTime, endTime, operation count)
+* ''Eviction'': When the number of groups exceeds `$:/config/rimir/minver/max-groups` (default: 10), the oldest group is deleted
+
+On wiki load, `startup.js` hydrates `$:/temp/minver/change-groups` from the index. Individual group data is loaded on demand via the `cg-load` operation.
+
+!! Coalescing rules
+
+During recording, operations on the same tiddler are coalesced to keep groups compact:
+
+|!Existing |!New |!Result |
+|create |modify |create (with updated `after`) |
+|modify |modify |modify (with updated `after`) |
+|create |delete |Operation removed entirely (net zero) |
+|modify |delete |delete (keeps original `before`) |
+
+This means a group always contains at most one operation per tiddler.
+
+!! Wrapped `deleteTiddler` pattern
+
+To capture tiddler state before deletion, minver wraps `$tw.wiki.deleteTiddler` rather than using the `th-deleting-tiddler` hook. The hook was unreliable because another plugin in the chain could return `false` and break the hook sequence, preventing minver from seeing the deletion. The wrapper approach guarantees minver always captures the final state regardless of other plugins.
+
+!! Rollback flow
+
+When rolling back a change-group:
+
+# Safety snapshots are taken for all affected tiddlers (current state before rollback)
+# Operations are reversed in reverse chronological order:
+#* ''create'' → tiddler is deleted
+#* ''delete'' → tiddler is recreated from `before` state
+#* ''modify'' → tiddler is restored to `before` state
+# Auto-snapshots created during the recording window (between group start and end time) are cleaned up to avoid cluttering the snapshot history
+# The group itself is deleted from localStorage
+
 <$transclude $tiddler="$:/plugins/rimir/doc-template/templates/callout" type="warning">
 <$fill $name="body">
 localStorage is shared across all origins and typically limited to ~5-10MB. Enable "persist auto-snapshots" with caution and monitor usage via the settings page.

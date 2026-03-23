@@ -22,8 +22,11 @@ minver keeps snapshot versions of your tiddlers directly in the browser. Snapsho
 
 * ''Manual snapshots'' — take a snapshot anytime from the editor preview pane
 * ''Auto-snapshots'' — automatically captures the previous version on every save
+* ''Auto-snapshots on create/delete'' — captures initial state on creation ("created-*") and final state on deletion ("deleted-*")
 * ''Per-field diff view'' — side-by-side comparison with `<$diff-text>`, integrated as editor preview type
 * ''Field-level rollback'' — revert individual fields or the entire tiddler to a snapshot
+* ''Manager revert'' — revert any snapshot directly from the manager without entering edit mode
+* ''Change-groups'' — record a session of changes (creates, edits, deletes) and review/rollback them as a unit
 * ''Compressed storage'' — uses native `CompressionStream` API to minimize localStorage usage
 * ''Export/Import'' — transfer snapshots between wikis via drag-and-drop or JSON download
 * ''Snapshot Manager'' — browse, diff, and clean up all snapshots across the wiki
@@ -41,6 +44,18 @@ minver keeps snapshot versions of your tiddlers directly in the browser. Snapsho
 # Click ''Snapshot draft'' to capture the current draft state
 # Edit the tiddler, then select your snapshot from the dropdown to see per-field diffs
 # Use the undo button next to any changed field to revert it
+
+!! Change-groups
+
+Change-groups let you record a session of tiddler changes and review or rollback them as a unit.
+
+# Click the record button in the page toolbar to start recording
+# Create, edit, and delete tiddlers as needed
+# Click stop to finish — the group is persisted to localStorage
+# View groups in the "groups" plugin tab: see every operation (create/modify/delete) with before/after states
+# Use "Rollback" to undo all changes in the group at once
+
+During recording, operations on the same tiddler are ''coalesced'': multiple edits merge into a single modify, a create followed by edits stays a single create, and a create followed by a delete removes the operation entirely. This keeps groups compact and rollback predictable.
 
 <$transclude $tiddler="$:/plugins/rimir/doc-template/templates/callout" type="info">
 <$fill $name="body">

@@ -80,5 +80,45 @@ The export includes both auto and manual snapshots from all tiddlers in localSto
 </$fill>
 </$transclude>
 
+!! Recording a change-group
+
+Use the `cg-start` and `cg-stop` operations to record a session of changes:
+
+```
+<!-- Start recording -->
+<$button>
+  Start recording
+  <$action-minver op="cg-start" label="refactoring session"/>
+</$button>
+
+<!-- Stop recording -->
+<$button>
+  Stop recording
+  <$action-minver op="cg-stop"/>
+</$button>
+```
+
+While recording is active, all tiddler creates, edits, and deletes are tracked automatically. The record/stop buttons in the page toolbar provide the same functionality.
+
+!! Cross-plugin API example
+
+Other plugins can start and stop recording via TW message dispatch:
+
+```
+<!-- Start recording from another plugin -->
+<$button>
+  Record changes
+  <$action-sendmessage $message="tm-minver-cg-start" $param="my-plugin session"/>
+</$button>
+
+<!-- Stop recording from another plugin -->
+<$button>
+  Done
+  <$action-sendmessage $message="tm-minver-cg-stop"/>
+</$button>
+```
+
+This allows any plugin or automation to trigger change-group recording without a direct dependency on minver's action widget.
+
 </$fill>
 </$transclude>

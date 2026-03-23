@@ -17,11 +17,14 @@ minver is entirely browser-side. The restart behavior is:
 
 |!File |!Type |!Restart needed? |
 |`storage.js` |`module-type: library` |Yes (server restart) |
+|`cg-storage.js` |`module-type: library` |Yes (server restart) |
 |`startup.js` |`module-type: startup` |Yes (server restart) |
 |`save-hook.js` |`module-type: startup` |Yes (server restart) |
 |`action-minver.js` |`module-type: widget` |Yes (server restart) |
 |`preview-snapshots.tid` |System tiddler (UI) |Browser reload |
 |`manager.tid` |System tiddler (UI) |Browser reload |
+|`groups.tid` |System tiddler (UI) |Browser reload |
+|`toolbar-record.tid` |System tiddler (UI) |Browser reload |
 |`settings.tid` |System tiddler (UI) |Browser reload |
 |`styles.tid` |Stylesheet |Browser reload |
 |Config tiddlers |Data |No restart needed |
@@ -37,15 +40,21 @@ JS modules require a full server restart. UI tiddlers (`.tid`) are system tiddle
 ```
 minver/
 ├── plugin.info
-├── storage.js / .meta        — compression, localStorage, eviction, capture
-├── startup.js / .meta        — hydrate from localStorage on load
+├── storage.js / .meta        — compression, localStorage, eviction, capture, shared helpers
+├── cg-storage.js / .meta     — change-group storage (record, coalesce, rollback, localStorage)
+├── startup.js / .meta        — hydrate from localStorage on load (snapshots + change-group index)
 ├── save-hook.js / .meta      — th-saving-tiddler hook (auto-snapshot + state reset)
-├── action-minver.js / .meta  — <$action-minver> widget (all operations)
+├── action-minver.js / .meta  — <$action-minver> widget (all operations incl. cg-* and revert)
 ├── preview-snapshots.tid     — editor preview pane (tagged $:/tags/EditPreview)
-├── manager.tid               — standalone snapshot manager UI
+├── manager.tid               — standalone snapshot manager UI (with revert button)
+├── groups.tid                — change-group browser/manager UI (plugin tab)
+├── toolbar-record.tid        — page toolbar record/stop button
+├── icon/
+│   ├── record.tid            — record icon (●) SVG
+│   └── stop.tid              — stop icon (■) SVG
 ├── settings.tid              — settings UI (tagged for core-hook hub)
 ├── styles.tid                — CSS (uses rr- theme classes where possible)
-├── config-*.tid              — default configuration values
+├── config-*.tid              — default configuration values (incl. config-max-groups.tid)
 ├── doc/                      — documentation (doc-template system)
 │   ├── overview.tid
 │   ├── architecture.tid

@@ -14,13 +14,14 @@ type: text/vnd.tiddlywiki
 !! Action widget: `<$action-minver>`
 
 |!Attribute |!Description |
-|`op` |Operation: `snapshot`, `delete`, `delete-all`, `rollback`, `rollback-field`, `export`, `import`, `clean-all` |
+|`op` |Operation (see table below) |
 |`title` |Original tiddler title (not the draft title) |
-|`label` |Snapshot label (for `snapshot` op, optional — defaults to timestamp) |
+|`label` |Snapshot label (for `snapshot` op, optional — defaults to timestamp). Change-group label (for `cg-start`). |
 |`draft` |Draft tiddler title (for `snapshot`, `rollback`, `rollback-field`) |
 |`source` |`"draft"` or `"saved"` — which version to snapshot (default: `"draft"`) |
-|`snapshot-id` |UUID of the target snapshot (for `delete`, `rollback`, `rollback-field`) |
+|`snapshot-id` |UUID of the target snapshot (for `delete`, `rollback`, `rollback-field`, `revert`) |
 |`field` |Field name (for `rollback-field` only) |
+|`group-id` |Change-group identifier (for `cg-delete`, `cg-load`, `cg-rollback`) |
 
 !! Operations
 
@@ -30,9 +31,16 @@ type: text/vnd.tiddlywiki
 |`delete-all` |Delete all snapshots for a tiddler. |
 |`rollback` |Replace all draft fields with snapshot fields. Fields not in the snapshot are removed. |
 |`rollback-field` |Restore a single field from the snapshot. If the field doesn't exist in the snapshot, it is removed from the draft. |
+|`revert` |Apply snapshot fields directly to the saved tiddler (not a draft). Used by the manager to restore a snapshot without entering edit mode. Attrs: `snapshot-id`, `title`. |
 |`export` |Serialize all snapshots from localStorage into `$:/minver/export` as JSON. |
 |`import` |Load snapshots from `$:/minver/export` into localStorage and wiki store. |
 |`clean-all` |Delete all snapshots from both localStorage and wiki store. |
+|`cg-start` |Start change-group recording. Attr: `label` (optional description). |
+|`cg-stop` |Stop recording, persist the change-group to localStorage. |
+|`cg-delete` |Delete a change-group. Attr: `group-id`. |
+|`cg-delete-all` |Delete all change-groups from localStorage. |
+|`cg-load` |Load group data from localStorage into a temp tiddler for display. Attr: `group-id`. |
+|`cg-rollback` |Rollback all changes in a group and delete the group. Attr: `group-id`. |
 
 !! Snapshot object format
 
@@ -91,6 +99,49 @@ The export tiddler `$:/minver/export` contains a JSON object keyed by tiddler ti
 ```
 
 Both auto and manual snapshots are included. Import merges with (overwrites) existing snapshots.
+
+!! Change-group object format
+
+```json
+{
+  "id": "uuid",
+  "label": "string",
+  "startTime": 1234567890,
+  "endTime": 1234567890,
+  "operations": [
+    { "id": "uuid", "timestamp": 1234567890, "type": "create|modify|delete", "title": "...", "before": {...}|null, "after": {...}|null }
+  ]
+}
+```
+
+Each operation records the tiddler state before and after the change. `before` is `null` for creates, `after` is `null` for deletes.
+
+!! Change-group temp tiddlers
+
+|!Tiddler |!Content |
+|`$:/temp/minver/cg-recording` |Text = group ID when recording, absent when not |
+|`$:/temp/minver/change-groups` |JSON index of all groups |
+|`$:/temp/minver/cg-active-group` |JSON of in-progress group (live updates during recording) |
+|`$:/temp/minver/cg-group/<id>` |Loaded group data for display (populated by `cg-load`) |
+
+!! Change-group configuration
+
+|!Tiddler |!Default |!Description |
+|`$:/config/rimir/minver/max-groups` |`10` |Maximum number of change-groups stored in localStorage |
+
+!! Change-group localStorage keys
+
+|!Key |!Content |
+|`minver-cg:<group-id>` |Compressed JSON of a single change-group |
+|`minver-cg-index` |Compressed JSON array of group summaries |
+
+!! Cross-plugin API (message events)
+
+Other plugins can start and stop change-group recording by dispatching TW messages:
+
+|!Message |!Parameter |!Description |
+|`tm-minver-cg-start` |`param`: label (optional) |Start recording a new change-group |
+|`tm-minver-cg-stop` |— |Stop recording the current change-group |
 
 </$fill>
 </$transclude>

@@ -255,6 +255,144 @@ describe("minver: storage", function() {
 		});
 	});
 
+	describe("fieldsEqual", function() {
+		it("should return true for identical objects", function() {
+			var a = {title: "Test", text: "hello"};
+			var b = {title: "Test", text: "hello"};
+			expect(storage.fieldsEqual(a, b)).toBe(true);
+		});
+
+		it("should return false for different values", function() {
+			var a = {title: "Test", text: "hello"};
+			var b = {title: "Test", text: "world"};
+			expect(storage.fieldsEqual(a, b)).toBe(false);
+		});
+
+		it("should return false for different key counts", function() {
+			var a = {title: "Test"};
+			var b = {title: "Test", text: "hello"};
+			expect(storage.fieldsEqual(a, b)).toBe(false);
+		});
+
+		it("should return true for same reference", function() {
+			var a = {title: "Test"};
+			expect(storage.fieldsEqual(a, a)).toBe(true);
+		});
+
+		it("should return false when first arg is null", function() {
+			expect(storage.fieldsEqual(null, {title: "Test"})).toBe(false);
+		});
+
+		it("should return false when second arg is null", function() {
+			expect(storage.fieldsEqual({title: "Test"}, null)).toBe(false);
+		});
+
+		it("should return true for two empty objects", function() {
+			expect(storage.fieldsEqual({}, {})).toBe(true);
+		});
+
+		it("should return false when key exists in a but not b", function() {
+			var a = {title: "Test", extra: "val"};
+			var b = {title: "Test", other: "val"};
+			expect(storage.fieldsEqual(a, b)).toBe(false);
+		});
+	});
+
+	describe("findSnapshot", function() {
+		var snaps = [
+			{id: "aaa", label: "first"},
+			{id: "bbb", label: "second"},
+			{id: "ccc", label: "third"}
+		];
+
+		it("should find snapshot by id", function() {
+			var result = storage.findSnapshot(snaps, "bbb");
+			expect(result).not.toBeNull();
+			expect(result.label).toBe("second");
+		});
+
+		it("should return null for unknown id", function() {
+			expect(storage.findSnapshot(snaps, "zzz")).toBeNull();
+		});
+
+		it("should return null for empty array", function() {
+			expect(storage.findSnapshot([], "aaa")).toBeNull();
+		});
+
+		it("should return first match", function() {
+			var result = storage.findSnapshot(snaps, "aaa");
+			expect(result.label).toBe("first");
+		});
+	});
+
+	describe("serializeTiddlerFields", function() {
+		it("should convert string values as-is", function() {
+			var result = storage.serializeTiddlerFields({title: "Test", text: "hello"});
+			expect(result.title).toBe("Test");
+			expect(result.text).toBe("hello");
+		});
+
+		it("should convert Date fields to strings", function() {
+			// Note: `instanceof Date` fails across TW's Node.js module sandbox
+			// boundaries (Date constructor differs between contexts). In the
+			// browser this works correctly and produces TW date strings.
+			// In Node tests, Dates fall through to String(val).
+			// We verify that the output is always a string regardless.
+			var wiki = new $tw.Wiki();
+			var now = new Date();
+			wiki.addTiddler(new $tw.Tiddler({title: "DateTest", text: "hello", created: now}));
+			var fields = storage.captureTiddlerFields(wiki, "DateTest", false);
+			expect(typeof fields.created).toBe("string");
+			expect(fields.created.length).toBeGreaterThan(0);
+		});
+
+		it("should convert Array via stringifyList", function() {
+			var result = storage.serializeTiddlerFields({tags: ["alpha", "beta"]});
+			expect(result.tags).toBe($tw.utils.stringifyList(["alpha", "beta"]));
+		});
+
+		it("should convert numbers to strings", function() {
+			var result = storage.serializeTiddlerFields({count: 42});
+			expect(result.count).toBe("42");
+		});
+
+		it("should handle empty object", function() {
+			var result = storage.serializeTiddlerFields({});
+			expect(Object.keys(result).length).toBe(0);
+		});
+
+		it("should not include inherited properties", function() {
+			var proto = {inherited: "val"};
+			var obj = Object.create(proto);
+			obj.own = "mine";
+			var result = storage.serializeTiddlerFields(obj);
+			expect(result.own).toBe("mine");
+			expect(result.inherited).toBeUndefined();
+		});
+	});
+
+	describe("saveSnapshotsToStore with empty array", function() {
+		it("should delete the temp tiddler when given empty array", function() {
+			var wiki = setupWiki();
+			// First save some snapshots
+			storage.saveSnapshotsToStore(wiki, "TestTiddler", [{id: "1", label: "test"}]);
+			var tempTitle = storage.getTempTitle("TestTiddler");
+			expect(wiki.tiddlerExists(tempTitle)).toBe(true);
+			// Now save empty array — should delete
+			storage.saveSnapshotsToStore(wiki, "TestTiddler", []);
+			expect(wiki.tiddlerExists(tempTitle)).toBe(false);
+		});
+
+		it("should delete the temp tiddler when given null", function() {
+			var wiki = setupWiki();
+			storage.saveSnapshotsToStore(wiki, "TestTiddler", [{id: "1", label: "test"}]);
+			var tempTitle = storage.getTempTitle("TestTiddler");
+			expect(wiki.tiddlerExists(tempTitle)).toBe(true);
+			storage.saveSnapshotsToStore(wiki, "TestTiddler", null);
+			expect(wiki.tiddlerExists(tempTitle)).toBe(false);
+		});
+	});
+
 	describe("constants", function() {
 		it("should export TEMP_PREFIX", function() {
 			expect(storage.TEMP_PREFIX).toBe("$:/temp/minver/snapshots/");

@@ -1,0 +1,35 @@
+title: $:/plugins/rimir/minver/toolbar-record
+tags: $:/tags/PageControls
+caption: {{$:/plugins/rimir/minver/icon/record}} Record changes
+description: Start or stop recording tiddler changes into a change-group
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+<!-- Recording active: show stop button -->
+<$reveal type="nomatch" state="$:/temp/minver/cg-recording" text="" default="">
+<$button tooltip="Stop recording changes" aria-label="Stop recording" class=<<tv-config-toolbar-class>>>
+<$action-minver op="cg-stop"/>
+<%if [<tv-config-toolbar-icons>match[yes]] %>
+<span class="mv-cg-recording-icon">
+<$transclude $tiddler="$:/plugins/rimir/minver/icon/stop"/>
+</span>
+<%endif%>
+<%if [<tv-config-toolbar-text>match[yes]] %>
+<span class="tc-btn-text">Stop recording</span>
+<%endif%>
+</$button>
+</$reveal>
+
+<!-- Not recording: show record button (starts immediately) -->
+<$reveal type="match" state="$:/temp/minver/cg-recording" text="" default="">
+<$button tooltip="Start recording tiddler changes" aria-label="Record changes" class=<<tv-config-toolbar-class>>>
+<$action-minver op="cg-start"/>
+<%if [<tv-config-toolbar-icons>match[yes]] %>
+<$transclude $tiddler="$:/plugins/rimir/minver/icon/record"/>
+<%endif%>
+<%if [<tv-config-toolbar-text>match[yes]] %>
+<span class="tc-btn-text">Record changes</span>
+<%endif%>
+</$button>
+</$reveal>
