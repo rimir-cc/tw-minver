@@ -378,6 +378,26 @@ describe("minver: cg-storage", function() {
 		});
 	});
 
+	describe("stopRecording edge cases", function() {
+
+		it("resolves cleanly when no recording is active (no-op)", function() {
+			// User may call stopRecording from a generic toolbar button without
+			// knowing whether a recording is active; the contract is "log a warning
+			// and resolve" rather than throw.
+			var warnSpy = spyOn(console, "warn");
+			var wiki = setupWiki();
+			// Ensure no active group
+			cgStorage.startRecording(wiki, "ignored");
+			cgStorage.stopRecording(wiki);  // first stop drains
+			// Second stop with nothing active
+			return cgStorage.stopRecording(wiki).then(function(result) {
+				expect(warnSpy).toHaveBeenCalled();
+				expect(result).toBeUndefined();
+			});
+		});
+
+	});
+
 	describe("constants", function() {
 		it("should export CG_STORAGE_PREFIX", function() {
 			expect(cgStorage.CG_STORAGE_PREFIX).toBe("minver-cg:");

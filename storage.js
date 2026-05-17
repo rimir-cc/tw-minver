@@ -40,10 +40,11 @@ function decompress(base64String) {
 // --- UUID generation ---
 
 function generateId() {
+	/* istanbul ignore else — crypto.randomUUID is available on every supported runtime; the manual fallback is only for ancient environments */
 	if (typeof crypto !== "undefined" && crypto.randomUUID) {
 		return crypto.randomUUID();
 	}
-	// Fallback
+	/* istanbul ignore next — see above; the manual UUID generator is unreachable on modern Node/browsers */
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
 		var r = Math.random() * 16 | 0;
 		var v = c === "x" ? r : (r & 0x3 | 0x8);
